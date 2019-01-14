@@ -20,7 +20,7 @@ header ethernet_t {
     bit<16>   etherType;
 }
 
-// NOTE: added new header type
+// NOTE:already added new header type for u
 header myTunnel_t {
     bit<16> proto_id;
     bit<16> dst_id;
@@ -82,6 +82,9 @@ parser MyParser(packet_in packet,
      */
     state parse_myTunnel {
         // 这个extract 一定提取出了 什么重要的信息： 后面可以用到
+        // 一种猜测是， 在 `deparser` 的部分，其`control` block 使用了
+        // `emit` 方法，这使得此时被`extract`的packet header 得以重新
+        // 序列化，并发射出去。
         packet.extract(hdr.myTunnel);
         transition select(hdr.myTunnel.proto_id) {
             TYPE_IPV4: parse_ipv4;
@@ -101,7 +104,7 @@ parser MyParser(packet_in packet,
 ************   C H E C K S U M    V E R I F I C A T I O N   *************
 *************************************************************************/
 
-control MyVerifyChecksum(inout headers hdr, inout metadata meta) {   
+control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
     apply {  }
 }
 
@@ -116,14 +119,14 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop();
     }
-    
+
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
         hdr.ethernet.dstAddr = dstAddr;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
-    
+
     table ipv4_lpm {
         key = {
             hdr.ipv4.dstAddr: lpm;
@@ -138,16 +141,35 @@ control MyIngress(inout headers hdr,
     }
 
     // TODO: declare a new action: myTunnel_forward(egressSpec_t port)
+    // tdo : tt gonna implement this
+    action myTunnel_forward(egressSpect_t port) {
+        standard_metadata.egress_spec = port;
+    }
+    // TDO: declare a new table: myTunnel_exact
+    table myTunnel_exact {
 
-
-    // TODO: declare a new table: myTunnel_exact
-    // TODO: also remember to add table entries!
-
+    // TDO: also remember to add table entries!
+        key = {
+            hdr.myTunnel.dst_id: exact;
+        }
+        actions = {
+            myTunnel_forward;
+            drop;
+        }
+        size = 1024;
+        default_action = drop();
+    }
 
     apply {
-        // TODO: Update control flow
-        if (hdr.ipv4.isValid()) {
+        // TDO: Update control flow,
+        //1 . first of all, process only non-tunneled IPv4 pkt;
+        if (hdr.ipv4.isValid() && !hdr.myTunnel.isValid()) {
             ipv4_lpm.apply();
+        }
+        //2. then we process the tunneled IPv4 pkt;
+        if (hdr.myTunnel.isValid()) {
+            //process it by apply the corresponding `myTunnel_exact` table
+            myTunnel_exact.apply();
         }
     }
 }
@@ -193,7 +215,8 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
-        // TODO: emit myTunnel header as well
+        // TDO: emit myTunnel header as well
+        packet.emit(hdr.myTunnel);
         packet.emit(hdr.ipv4);
     }
 }
