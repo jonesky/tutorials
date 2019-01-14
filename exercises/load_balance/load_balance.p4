@@ -72,6 +72,7 @@ parser MyParser(packet_in packet,
     state parse_ipv4 {
         packet.extract(hdr.ipv4);
         transition select(hdr.ipv4.protocol) {
+        // 似乎 6 就是TCP 的 辨别码
             6: parse_tcp;
             default: accept;
         }
@@ -102,8 +103,22 @@ control MyIngress(inout headers hdr,
         mark_to_drop();
     }
     action set_ecmp_select(bit<16> ecmp_base, bit<32> ecmp_count) {
-        /* TODO: hash on 5-tuple and save the hash result in meta.ecmp_select 
+        /* TDO: hash on 5-tuple and save the hash result in meta.ecmp_select
            so that the ecmp_nhop table can use it to make a forwarding decision accordingly */
+      // make a hash
+       hash(
+         meta.ecmp_select, /* that's where to save hash result */
+         HashAlgorithm.crc16,
+         ecmp_base,
+         {
+             hdr.ipv4.srcAddr,
+             hdr.ipv4.dstAddr,
+             hdr.ipv4.protocol,
+             hdr.tcp.srcPort,
+             hdr.tcp.dstPort
+         },
+         ecmp_count
+       );
     }
     action set_nhop(bit<48> nhop_dmac, bit<32> nhop_ipv4, bit<9> port) {
         hdr.ethernet.dstAddr = nhop_dmac;

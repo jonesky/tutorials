@@ -95,3 +95,13 @@ https://github.com/p4lang/tutorials/tree/master/exercises/basic_tunnel
 
 
 ![](assets/p4_runtime_intro-91acc7fe.gif)
+
+## 实践 load balance
+
+### 视频结果：
+
+see: assets/Video_2019-01-14_114934.mp4
+
+<video id="video" controls="" preload="none" poster="assets/README-19506be2.png">
+      <source id="mp4" src="assets/Video_2019-01-14_114934.mp4" type="video/mp4">
+      </video>
