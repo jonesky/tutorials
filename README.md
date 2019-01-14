@@ -98,6 +98,18 @@ https://github.com/p4lang/tutorials/tree/master/exercises/basic_tunnel
 
 ## 实践 load balance
 
+数据中心内负载均衡-ECMP的使用分析: https://www.sdnlab.com/20605.html
+
+### ECMP(Equal-cost multi-path)
+
+ECMP是一个逐跳的基于流的负载均衡策略，当路由器发现同一目的地址出现多个最优路径时，会更新路由表，为此目的地址添加多条规则，对应于多个下一跳。
+
+#### ECMP的路径选择策略有多种方法：
+
+- 哈希，例如根据源IP地址的哈希为流选择路径。
+- 轮询，各个流在多条路径之间轮询传输。
+- 基于路径权重，根据路径的权重分配流，权重大的路径分配的流数量更多。
+
 ### 视频结果：
 
 see: assets/Video_2019-01-14_114934.mp4
@@ -130,3 +142,34 @@ make clean
 
 
 从上图可以看到，多次进行h1 上面的send  到 10.0.0.1 ,报文有时候均衡到h2 ， 有时候 均衡 到 h3 .
+
+
+
+## 实践 mri
+
+Multi-Hop Route Inspection （MRI）
+
+
+表面上的结果就是 h2 会收到那些pkt ，但是这些pkt 的optioin 字段里没有 路径 信息，也就是说 ： 你会看到`count=0`
+
+
+---
+
+使用solution的答案 之后， 可以看到IP 头部的option 部分有了MRI 的信息
+
+![](assets/README-5250599b.gif)
+
+### iperf
+
+
+iperf是一个网络性能测试工具，能够测量TCP和UDP的带宽。
+
+![](assets/README-d43baf50.png)
+
+## 实践 source_routing
+
+- [ ] TODO 0114
+
+看了一遍，source route：
+
+ip source routing 提供的功能是记录报文经过的路径，并期望报文经由该路径返回

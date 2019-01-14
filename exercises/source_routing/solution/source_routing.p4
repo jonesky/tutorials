@@ -59,7 +59,7 @@ parser MyParser(packet_in packet,
                 out headers hdr,
                 inout metadata meta,
                 inout standard_metadata_t standard_metadata) {
-    
+
     state start {
         transition parse_ethernet;
     }
@@ -76,7 +76,7 @@ parser MyParser(packet_in packet,
         packet.extract(hdr.srcRoutes.next);
         transition select(hdr.srcRoutes.last.bos) {
             1: parse_ipv4;
-            default: parse_srcRouting;
+            default: parse_srcRouting; // when it is 0, identicate it's source_routing, not ipv4 route
         }
     }
 
@@ -92,7 +92,7 @@ parser MyParser(packet_in packet,
 ************   C H E C K S U M    V E R I F I C A T I O N   *************
 *************************************************************************/
 
-control MyVerifyChecksum(inout headers hdr, inout metadata meta) {   
+control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
     apply {  }
 }
 
@@ -108,7 +108,7 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop();
     }
-    
+
     action srcRoute_nhop() {
         standard_metadata.egress_spec = (bit<9>)hdr.srcRoutes[0].port;
         hdr.srcRoutes.pop_front(1);
@@ -121,7 +121,7 @@ control MyIngress(inout headers hdr,
     action update_ttl(){
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
-    
+
     apply {
         if (hdr.srcRoutes[0].isValid()){
             if (hdr.srcRoutes[0].bos == 1){
@@ -133,7 +133,7 @@ control MyIngress(inout headers hdr,
             }
         }else{
             drop();
-        } 
+        }
     }
 }
 

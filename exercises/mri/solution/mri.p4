@@ -130,9 +130,9 @@ parser MyParser(packet_in packet,
         meta.parser_metadata.remaining = meta.parser_metadata.remaining  - 1;
         transition select(meta.parser_metadata.remaining) {
             0 : accept;
-            default: parse_swtrace;
+            default: parse_swtrace; //递归调用自己
         }
-    }    
+    }
 }
 
 
@@ -140,7 +140,7 @@ parser MyParser(packet_in packet,
 ************   C H E C K S U M    V E R I F I C A T I O N   *************
 *************************************************************************/
 
-control MyVerifyChecksum(inout headers hdr, inout metadata meta) {   
+control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
     apply {  }
 }
 
@@ -155,7 +155,7 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop();
     }
-    
+
     action ipv4_forward(macAddr_t dstAddr, egressSpec_t port) {
         standard_metadata.egress_spec = port;
         hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
@@ -175,7 +175,7 @@ control MyIngress(inout headers hdr,
         size = 1024;
         default_action = NoAction();
     }
-    
+
     apply {
         if (hdr.ipv4.isValid()) {
             ipv4_lpm.apply();
@@ -190,7 +190,7 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    action add_swtrace(switchID_t swid) { 
+    action add_swtrace(switchID_t swid) {
         hdr.mri.count = hdr.mri.count + 1;
         hdr.swtraces.push_front(1);
         // According to the P4_16 spec, pushed elements are invalid, so we need
@@ -202,18 +202,18 @@ control MyEgress(inout headers hdr,
         hdr.swtraces[0].qdepth = (qdepth_t)standard_metadata.deq_qdepth;
 
         hdr.ipv4.ihl = hdr.ipv4.ihl + 2;
-        hdr.ipv4_option.optionLength = hdr.ipv4_option.optionLength + 8; 
-	hdr.ipv4.totalLen = hdr.ipv4.totalLen + 8;
+        hdr.ipv4.totalLen = hdr.ipv4.totalLen + 8;
+        hdr.ipv4_option.optionLength = hdr.ipv4_option.optionLength + 8;
     }
 
     table swtrace {
-        actions = { 
-	    add_swtrace; 
-	    NoAction; 
+        actions = {
+    	      add_swtrace;
+	          NoAction; 
         }
-        default_action = NoAction();      
+        default_action = NoAction();
     }
-    
+
     apply {
         if (hdr.mri.isValid()) {
             swtrace.apply();
@@ -255,7 +255,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
         packet.emit(hdr.ipv4);
         packet.emit(hdr.ipv4_option);
         packet.emit(hdr.mri);
-        packet.emit(hdr.swtraces);                 
+        packet.emit(hdr.swtraces);
     }
 }
 
