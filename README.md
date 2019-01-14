@@ -113,3 +113,20 @@ see: assets/Video_2019-01-14_114934.mp4
 ---
 
  接下来，我们使用solution 里面的p4 源代码看看。
+
+
+一套命令如下：
+
+
+```
+make run
+xterm h1 h2 h3
+./send.py 10.0.0.1 "your text like: p4 is cool"
+make stop
+make clean
+```
+
+![](assets/README-44c06c72.gif)
+
+
+从上图可以看到，多次进行h1 上面的send  到 10.0.0.1 ,报文有时候均衡到h2 ， 有时候 均衡 到 h3 .
