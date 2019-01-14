@@ -105,3 +105,11 @@ see: assets/Video_2019-01-14_114934.mp4
 <video id="video" controls="" preload="none" poster="assets/README-19506be2.png">
       <source id="mp4" src="assets/Video_2019-01-14_114934.mp4" type="video/mp4">
       </video>
+
+可以从下方的gif 中，发现仅仅只有2.2（h2） 收到了h1 对0.1 的请求， h3 并没有进行 LB
+
+![](assets/README-e75cd481.gif)
+
+---
+
+ 接下来，我们使用solution 里面的p4 源代码看看。

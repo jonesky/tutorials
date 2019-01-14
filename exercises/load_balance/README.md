@@ -1,4 +1,4 @@
-# Load Balancing 
+# Load Balancing
 
 In this exercise, you will implement a form of load balancing based on
 a simple version of Equal-Cost Multipath Forwarding. The switch you
@@ -48,7 +48,7 @@ up a switch in Mininet to test its behavior.
    ```bash
    ./send.py 10.0.0.1 "P4 is cool"
    ```
-   The message will not be received.
+   The message will not be received.（或许他应该说：not be received by h3, can be received by h2, ； 因为现在没有实现在h3 的 LB，我是从做实验看到了h2 能确实收到 发往 10.0.0.1 的报文）
 5. Type `exit` to leave each XTerm and the Mininet command line.
 
 The message was not received because each switch is programmed with
