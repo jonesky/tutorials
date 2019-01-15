@@ -31,3 +31,6 @@ logs/
 
 # IntelliJ / PyCharm
 .idea/
+# ppt files will be omit by tt
+*.ppt
+*.pptx
