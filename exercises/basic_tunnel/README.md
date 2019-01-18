@@ -26,6 +26,13 @@ table are inserted by the control plane. When a rule matches a packet, its
 action is invoked with parameters supplied by the control plane as part of the
 rule.
 
+也就是说： control panel 会进行表项的下发，下发的具体 的 内容有：
+
+`table_name`
+`one_action_in_this_table`  比如找到一个匹配的src IP key，然后跳转到寻找dst IP 的对应mac 的 `action` 里
+`one_key_will_trigger_this_action` 比如IP 值
+`any_useful_data_this_action_need` 比如IP key 是`10.2.3.4`的下一跳ptr值 say: `12`
+
 For this exercise, we have already added the necessary static control plane
 entries. As part of bringing up the Mininet instance, the `make run` command
 will install packet-processing rules in the tables of each switch. These are
@@ -105,11 +112,11 @@ should not be received by h2, and will instead be received by h3.
 5. Now we test with tunneling. In `h1`'s xterm, send a message to `h2`: ```bash
 ./send.py 10.0.2.2 "P4 is cool" --dst_id 2``` The packet should be received at
 `h2`. If you examine the received packet you should see that is consists of an
-Ethernet header, a tunnel header, an IP header, a TCP header, and the message. 
+Ethernet header, a tunnel header, an IP header, a TCP header, and the message.
 6. In `h1`'s xterm, send a message: ```bash ./send.py 10.0.3.3 "P4 is cool"
 --dst_id 2``` The packet should be received at `h2`, even though that ip
 address is the address of `h3`. This is because the switch is no longer using
-the IP header for routing when the `MyTunnel` header is in the packet. 
+the IP header for routing when the `MyTunnel` header is in the packet.
 7. Type `exit` or `Ctrl-D` to leave each xterm and the Mininet command line.
 
 
@@ -164,4 +171,3 @@ the background. Use the following command to clean up these instances:
 
 Congratulations, your implementation works! Move onto the next assignment
 [p4runtime](../p4runtime)!
-
