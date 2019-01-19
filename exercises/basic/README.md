@@ -1,5 +1,17 @@
 # Implementing Basic Forwarding
 
+这篇文章指导我们如何完成三层路由的功能。
+
+ 查看初始代码：`basic.p4`，可以发现一些todo, 比如（下方图片，左侧为未完成，右侧是完成的）
+  1. 你需要在parser 里增加两个状态机的迁移行为：解析1》以太网，2》IPv4 的头部 的state
+  ![](assets/README-c651116d.png)
+  2.  在ingress 的流水线中增加ipv4 forward 的action，如此，便可以实现三层转发
+  ![](assets/README-9bd80b55.png)
+  3. 通过apply 语句，可以让上述action 所在 的表 生效
+  ![](assets/README-356fc1eb.png)
+  4. deparser 做的很简单，就是发射头部，reassemble 就是通过这样的方式完成的
+  ![](assets/README-78983006.png)
+
 ## Introduction
 
 The objective of this exercise is to write a P4 program that

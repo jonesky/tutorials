@@ -12,6 +12,8 @@ outfile := $(source:.p4=.json)
 compiled_json := $(BUILD_DIR)/$(outfile)
 
 # Define NO_P4 to start BMv2 without a program
+# 在实验环境中，我们看到没有 -j 选项 出现在命令行。 也就是说：没有def NO_P4 选项。
+# 也就是说 ： 定义了 P4 选项
 ifndef NO_P4
 run_args += -j $(compiled_json)
 endif
