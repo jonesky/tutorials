@@ -1,3 +1,80 @@
+[TOC]
+
+
+
+# 实践basic tunneling
+
+ 这个实验期待什么样的结果：在网络中， 带有`myTunnel` 标记的报文，可以获得比IPv4 标记（地址，身份）更高的传送优先级。
+
+ 比如：
+
+ 我希望： 通过通道标记`myTunnel` 实际对应的值 ：dst_id =2  到达 host 2。
+
+但是 报文的IP标记`ipv4`, 实际对应的值 是host 3 的IP
+
+即便如此，我们可以看到实现了 basic tunneling 的虚拟交换机 可以通过 host 3 寻址 到host 2.
+
+你需要完成的是：
+
+1. 新的报文头部增加 `myTunnel` 字段，
+![](assets/README-90f5615f.png)
+2. 需要在parser 里添加一个能解析此`myTunnel` 字段的 状态。
+![](assets/README-c8ccf552.png)
+3.  完善ingress，以至于我们能在入口流水线处理 `myTunnel` 字段 的MA
+![](assets/README-58e27c6e.png)
+4. 令一个MA 生效的方式是 apply 这个策略
+![](assets/README-d3759b23.png)
+
+接下来我将展示，完善`前 / 后`的交换机表现出来的现象
+
+
+
+ps： 所有步骤可以参考 tutorial ：
+
+https://github.com/p4lang/tutorials/tree/master/exercises/basic_tunnel
+
+
+## 完善前的交换机表现出来的现象
+
+现象是host3 拿到了 去往host 2 的报文，也就是说没有完成 tunnel 功能。
+
+![](../../assets/p4_runtime_intro-e4089c90.png)
+
+- In h2's xterm, start the server:`bash ./receive.py`
+- 然后，首先测试 without tunneling: 在h1 使用：`./send.py 10.0.2.2 "P4 is cool, and you" `
+
+![](../../assets/p4_runtime_intro-d6ed7144.png)
+
+
+没有启动h3的receive 的时候，h1 可以发送给h3，这当然没错，只不过没有打开h3看看接收的内容
+
+开启了h3的xterm 终端，并开启`receive.py`，h1 发送给h3 ，如下：
+
+![](../../assets/p4_runtime_intro-57d5ccb3.png)
+
+## 完善后的交换机表现出来的现象
+
+接下来测试带有我们自己tunnel tag 的报文
+
+### 首先是 带着通道标签 dst == 2， 目的ip 也是 h2 的
+
+下面的 gif 图告诉我们，h2一定可以收到
+
+- h1 send  h2 ：  `./send.py 10.0.2.2 "P4 is cool" --dst_id 2`
+![](../../assets/p4_runtime_intro-2307f675.gif)
+
+### 然后是  带着通道标签 dst == 2， 目的ip 却是 h3 的
+
+下面的 gif 图告诉我们，h2也是可以收到的
+
+- h1 send to h2 by send to h3 :  `./send.py 10.0.3.3 "P4 is cool" --dst_id 2`
+
+gif 图是最顶层的assets/p4_runtime_intro-91acc7fe.gif
+
+![](../../assets/p4_runtime_intro-91acc7fe.gif)
+
+# 以下是英文原文指导
+
 # Implementing Basic Tunneling
 
 ## Introduction
