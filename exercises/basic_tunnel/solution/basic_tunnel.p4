@@ -144,12 +144,12 @@ control MyIngress(inout headers hdr,
 
     apply {
         if (hdr.ipv4.isValid() && !hdr.myTunnel.isValid()) {
-            // Process only non-tunneled IPv4 packets
+            // 如果 `myTunnel` 字段是无效的，那么仅仅处理IPV4
             ipv4_lpm.apply();
         }
 
         if (hdr.myTunnel.isValid()) {
-            // process tunneled packets
+            // 如果是有效的`myTunnel`字段，那么采用`myTunnel` 的MA行为
             myTunnel_exact.apply();
         }
     }
