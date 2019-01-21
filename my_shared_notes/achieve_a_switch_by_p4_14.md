@@ -163,3 +163,8 @@ apply 的表是如下：
 
 ### vlan_tag_t
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20190121140454556.png)
+
+
+## 辅助： 术语表
+
+![image](https://wx1.sinaimg.cn/large/005JrW9Kgy1fze8nrbydvj30kw02xa9z.jpg)
