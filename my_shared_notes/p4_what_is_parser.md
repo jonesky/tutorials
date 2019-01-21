@@ -30,6 +30,7 @@ ParserModel {
 比如 
 
 a。 有的架构 直接 drop 掉 reject 的包
+
 b。 有的架构 会 送 到下一个block ，而且 附带 错误码
 
 
