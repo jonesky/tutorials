@@ -4,11 +4,13 @@
 # c12 pkt parser
 
 
+
 parser就是一个状态机，它自身在多种状态之间切换， 在不同的状态中，完成：
 
 
 - 次态的select/ transition
 - 对条件的verify
+- 提取一些bits， 形成 一个 header 
 
 ![image](https://wx2.sinaimg.cn/large/005JrW9Kgy1fzedzxndovj30bc0buwew.jpg)
 
@@ -27,7 +29,7 @@ ParserModel {
 
 架构会决定parser 的 accept 状态 和  reject 状态的 实际行为。
 
-比如 
+比如
 
 a。 有的架构 直接 drop 掉 reject 的包
 
@@ -120,14 +122,14 @@ void packet_in.extract<T>(out T headerLValue) {
 `void extract<T>(out T headerLvalue, in bit<32> variableFieldSize);`
 
 
-### 12.8.3 lookahead 环视 
+### 12.8.3 lookahead 环视
 
 这个和 `extract` 非常相似，除了它不会将内部指针移位，aka：仅仅就是看看，而不提取
 
 ![image](https://wx2.sinaimg.cn/large/005JrW9Kgy1fzefgxw6hpj30dl00tdfq.jpg)
 
 
-### 12.8.4. Skipping bits 
+### 12.8.4. Skipping bits
 
 跳过 一些 bit ，aka： 不把它赋值给 某些 header
 
@@ -137,13 +139,13 @@ void packet_in.extract<T>(out T headerLValue) {
 
 头栈
 
-这个栈就是个数组， 此数组包含两个指针： next ， last 
+这个栈就是个数组， 此数组包含两个指针： next ， last
 
 意思分别是： 下一个，上一个
 
 我的理解其实是： 下一个 = 这一个， 上一个 = 就是上一个。
 
-如下的代码使得我们可以根据前一个 mpls 的header 的bos 值 来决定是否需要继续处理 mpls 标签。（ps： bos 告诉我们：后面还有mpls 标签哦，你应该继续parse mpls 的内容） 
+如下的代码使得我们可以根据前一个 mpls 的header 的bos 值 来决定是否需要继续处理 mpls 标签。（ps： bos 告诉我们：后面还有mpls 标签哦，你应该继续parse mpls 的内容）
 
 ```C
 struct Pkthdr {
@@ -173,5 +175,3 @@ parser P(packet_in b, out Pkthdr p) {
 ## 12.10. Sub-parsers
 
 嵌套子 parser
-
-
