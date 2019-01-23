@@ -52,7 +52,8 @@ header ipv4_t {
 
 struct metadata {
     /* empty */
-    bit<1>    set;
+    standard_metadata_t data;
+    bit<12>    changedVlanTag;
 }
 
 struct headers {
@@ -114,62 +115,21 @@ control MyIngress(inout headers hdr,
         mark_to_drop();
     }
 
-    // 不在意以下这些set flag ;; 其他业务相关
-    action set_flag(){
-		meta.set = 1;
-    }
-    
-    table associate_table {
-        key = {
-            hdr.ethernet.srcAddr: exact;
-	    hdr.ipv4.srcAddr: lpm;
-        }
-        actions = {
-            set_flag;
-            drop;
-            NoAction;
-        }
-        size = 1024;
-        default_action = NoAction();
-    }
-
-    // 处理ipv4 报文的行为
-    action ipv4_forward(macAddr_t dstAddr, egressSpec_t port, bit<1> l2_l3) {
-		standard_metadata.egress_spec = port;
-		if(l2_l3==1){
-		    hdr.ethernet.srcAddr = hdr.ethernet.dstAddr;
-		}
-		hdr.ethernet.dstAddr = dstAddr;
-		hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
-    }
-    table ipv4_lpm {
-		key = {
-		    hdr.ipv4.dstAddr: lpm;
-		    standard_metadata.ingress_port: exact;
-		}
-		actions = {
-		    ipv4_forward;
-		    drop;
-		    NoAction;
-		}
-		size = 1024;
-		default_action = NoAction();
-    }
-
     // 假定需要处理vlan ,那么有这样的行为 
-    action vlan_forward(egressSpec_t portOrPorts) {
+    action vlan_forward(egressSpec_t portOrPorts, bit<12> changeTag) {
         //egressSpec_t 可能是一个单播的口, 也可能是多个 口
         standard_metadata.egress_spec = portOrPorts;
-        // 还需要做什么呢? 去除 vlan tag 应该在 egress 做吧?
-        // 所以先空着....
+        // 多种tag 行为： 
+        // 1. untag 则把 tag 改成 0；
+        // 2. 更改tag 则把tag 改成不是0 的；
+        standard_metadata.changedVlanTag = changeTag;
     }
 
     table vlan_exact {
         key = {
         	hdr.vlan.vid: exact; // 我们要精确匹配每个vlan id
-        	standard_metadata.ingress_port: exact; // 每个报文的入端口也是需要检查的
+        	standard_metadata.ingress_port: exact; // 每个报文的入端口也是需要检查的， 比如入口是access口， 但是此入口进入的pkt 是带有 vlan tag 的，这不正常（PC 不会发送一个带有tag 的报文），于是匹配行为：drop
         }
-        // 当上述的key 发生精确的匹配 或者没有匹配,使用这些action
         actions = {
             vlan_forward;
             drop;
@@ -180,15 +140,9 @@ control MyIngress(inout headers hdr,
     }
     
     apply {
-    	if (hdr.vlan.isValid()) {
-    		vlan_exact.apply();
-    	}
-		if(hdr.ipv4.isValid()){
-	        associate_table.apply();
-		    if(meta.set==1){
-				ipv4_lpm.apply();
-		    }
-		}
+        if (hdr.vlan.isValid()) {
+            vlan_exact.apply();
+        }
     }
 
 }
@@ -200,7 +154,13 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    apply {  }
+    apply { 
+        if (standard_metadata.changedVlanTag == 0) {
+            // 需要untag
+            hdr.vlan.setInvalid();// 可能不准确是这个方法，总之是类似使之失效的API
+        }
+        // 不需要untag 的情况，可能tag 有改变或者没有改变，直接转发
+    }
 }
 
 /*************************************************************************
@@ -237,8 +197,8 @@ control MyComputeChecksum(inout headers hdr, inout metadata meta) {
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
 		packet.emit(hdr.ethernet);
-		// 如果没有emit vlan, 那么就是 untag 输出, 这样理解对吗?
-		// packet.emit(hdr.vlan);
+        // 在有效的时候，发送 vlan hdr， 无效的时候，实际上do nothing
+		packet.emit(hdr.vlan); // 如果 emit（hdr) 时， hdr 是invalid 的，此时就是个no-op 行为
 		packet.emit(hdr.ipv4);
     }
 }
