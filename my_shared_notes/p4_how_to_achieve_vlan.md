@@ -27,7 +27,7 @@ header ethernet_t {
     macAddr_t srcAddr;
     bit<16>   etherType;
 }
-// 在这里添加新的 头部, 用以 支持  vlan 
+// 在这里添加新的 头部, 用以 支持  vlan
 header vlan_t {
 	bit<3> pcp;// priority
 	bit<1> cfi; // drop or not
@@ -115,11 +115,11 @@ control MyIngress(inout headers hdr,
         mark_to_drop();
     }
 
-    // 假定需要处理vlan ,那么有这样的行为 
+    // 假定需要处理vlan ,那么有这样的行为
     action vlan_forward(egressSpec_t portOrPorts, bit<12> changeTag) {
         //egressSpec_t 可能是一个单播的口, 也可能是多个 口
         standard_metadata.egress_spec = portOrPorts;
-        // 多种tag 行为： 
+        // 多种tag 行为：
         // 1. untag 则把 tag 改成 0；
         // 2. 更改tag 则把tag 改成不是0 的；
         standard_metadata.changedVlanTag = changeTag;
@@ -138,7 +138,7 @@ control MyIngress(inout headers hdr,
         size = 4096; // 因为支持最多4094 个vlan??
         default_action = NoAction();
     }
-    
+
     apply {
         if (hdr.vlan.isValid()) {
             vlan_exact.apply();
@@ -147,6 +147,12 @@ control MyIngress(inout headers hdr,
 
 }
 
+```
+预期的vlan table 可能是这样的：
+
+![image](https://ws1.sinaimg.cn/large/005JrW9Kgy1fzgkru9bwfj30ra05y74t.jpg)
+```
+
 /*************************************************************************
 ****************  E G R E S S   P R O C E S S I N G   *******************
 *************************************************************************/
@@ -154,7 +160,7 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
-    apply { 
+    apply {
         if (standard_metadata.changedVlanTag == 0) {
             // 需要untag
             hdr.vlan.setInvalid();// 可能不准确是这个方法，总之是类似使之失效的API
@@ -198,7 +204,7 @@ control MyDeparser(packet_out packet, in headers hdr) {
     apply {
 		packet.emit(hdr.ethernet);
         // 在有效的时候，发送 vlan hdr， 无效的时候，实际上do nothing
-		packet.emit(hdr.vlan); // 如果 emit（hdr) 时， hdr 是invalid 的，此时就是个no-op 行为
+		packet.emit(hdr.vlan); // 如果 emit（hdr) 时， hdr 是invalid 的，此时就是个no-op 行为； 见 spec 15.1
 		packet.emit(hdr.ipv4);
     }
 }
@@ -216,4 +222,3 @@ MyComputeChecksum(),
 MyDeparser()
 ) main;
 ```
-
