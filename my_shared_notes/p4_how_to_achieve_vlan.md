@@ -77,7 +77,7 @@ parser MyParser(packet_in packet,
     state parse_ethernet {
 		packet.extract(hdr.ethernet);
 		transition select(hdr.ethernet.etherType) {
-		    TYPE_IPV4: parse_ipv4;
+            TYPE_IPV4: parse_ipv4;
 		    TYPE_VLAN: parse_vlan;
 		    default: accept;
 		}
@@ -89,7 +89,10 @@ parser MyParser(packet_in packet,
 
     state parse_vlan{
     	packet.extract(hdr.vlan);
-    	transition accept; // 就像解析 ipv4 报文一样,开始 解析vlan 报文; 即将进入ingress control
+    	transition select(hdr.vlan.etherType) {
+            TYPE_IPV4: parse_ipv4;
+            default: accept;
+        } //tdo vlan 中解析ipv4 就像解析 ipv4 报文一样,开始 解析vlan 报文; 即将进入ingress control
     }
 }
 
@@ -160,6 +163,7 @@ control MyIngress(inout headers hdr,
 control MyEgress(inout headers hdr,
                  inout metadata meta,
                  inout standard_metadata_t standard_metadata) {
+                    // todo 0124 egress not-allow-range drop 
     apply {
         if (standard_metadata.changedVlanTag == 0) {
             // 需要untag
