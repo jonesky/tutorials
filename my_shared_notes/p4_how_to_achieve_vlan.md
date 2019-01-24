@@ -51,7 +51,6 @@ header ipv4_t {
 }
 
 struct metadata {
-
     bit<12>    changedVlanTag;
 }
 
