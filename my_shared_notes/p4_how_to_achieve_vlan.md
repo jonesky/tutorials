@@ -51,8 +51,7 @@ header ipv4_t {
 }
 
 struct metadata {
-    /* empty */
-    standard_metadata_t data;
+
     bit<12>    changedVlanTag;
 }
 
@@ -154,7 +153,7 @@ control MyIngress(inout headers hdr,
 预期的vlan table 可能是这样的：
 
 ![image](https://ws1.sinaimg.cn/large/005JrW9Kgy1fzgkru9bwfj30ra05y74t.jpg)
-```
+```c
 
 /*************************************************************************
 ****************  E G R E S S   P R O C E S S I N G   *******************
