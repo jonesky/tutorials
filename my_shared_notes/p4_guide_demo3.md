@@ -215,3 +215,24 @@ control DeparserImpl(packet_out packet, in headers hdr) {
 
 ```
 
+
+// 0124
+
+# 实验
+
+
+## 编译：
+
+![image](https://wx2.sinaimg.cn/large/005JrW9Kly1fzhidg893rj30hp035jrf.jpg)
+
+
+## 加载编译产物
+
+
+![image](https://wx4.sinaimg.cn/large/005JrW9Kly1fzhj3ch9ogj30pu011glj.jpg)
+
+
+## 开启控制层 与 数据层的通信
+
+![image](https://ws1.sinaimg.cn/large/005JrW9Kly1fzhj50qw4qj30be029t8m.jpg)
+
