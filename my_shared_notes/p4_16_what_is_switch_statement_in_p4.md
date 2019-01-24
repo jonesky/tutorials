@@ -17,7 +17,9 @@ see： 11.7 switch statement
 
 
 
-`default_action`  在 p4 16 spec 13.1 说： 是 table 的一个 可选属性
+`default_action`  在 p4 16 spec 13.1  章节 说： 是 table 的一个 可选属性， 一个 table 没有给定`default_action`的时候，就仅仅继续执行了，不影响任何逻辑
+
+![image](https://wx2.sinaimg.cn/large/005JrW9Kly1fzht87saohj30z7031aai.jpg)
 
 
 
