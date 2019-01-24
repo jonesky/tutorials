@@ -14,13 +14,3 @@ markdown
 ![image](https://ws3.sinaimg.cn/large/005JrW9Kgy1fzgngmzrv2j30am0283yf.jpg)
 
 
-# how to preview 
-
-
-use alt + m
-
-```py
-def ini
-```
-
-![image](https://ws4.sinaimg.cn/large/005JrW9Kly1fzgq5oxymcj30eo0bu74j.jpg)
